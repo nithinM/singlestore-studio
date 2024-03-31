@@ -2,6 +2,7 @@
 FROM debian:buster
 
 # Add a build argument for the version
+ARG BASE_URL
 ARG VERSION
 
 # Install dependencies
