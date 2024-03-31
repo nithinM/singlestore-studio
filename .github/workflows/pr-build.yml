@@ -19,14 +19,14 @@ jobs:
         env:
           BASE_URL: https://release.memsql.com/production/debian/pool/
 
-      - name: Auto-assign PR to me
+      - name: Auto-assign PR
         uses: actions/github-script@v7
         with:
           script: |
             github.rest.issues.addAssignees({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: context.payload.pull_request.number,
               assignees: ['nithinM']
             })
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
