@@ -9,7 +9,7 @@ ARG VERSION
 RUN apt-get update && apt-get install -y wget libssl1.1 && rm -rf /var/lib/apt/lists/*
 
 # Download and install the specified version of SingleStore Studio
-RUN wget "${BASE_URL}${VERSION}" -O /tmp/singlestoredb-studio.deb \
+RUN wget "${BASE_URL}singlestoredb-studio_${VERSION}" -O /tmp/singlestoredb-studio.deb \
     && dpkg -i /tmp/singlestoredb-studio.deb \
     && rm /tmp/singlestoredb-studio.deb
 
