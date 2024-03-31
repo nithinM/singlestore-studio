@@ -1,4 +1,4 @@
-name: Build, Push, and Mark on Approval
+name: Build, Push, and Mark
 
 on:
   pull_request_review:
@@ -7,21 +7,17 @@ on:
 jobs:
   build-push-mark:
     runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Ensure we get all history for .built_versions tracking
+          fetch-depth: 0
+          token: ${{ secrets.PAT }} # Use PAT for checkout to ensure subsequent git operations can push
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
 
       - name: Build, push Docker image, and mark version
         run: ./build-and-push.sh --build-push-mark
@@ -30,10 +26,27 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Commit version.txt changes
+      - name: Commit and push changes
         run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add version.txt .built_versions
-          git commit -m "Mark version as built" -a || echo "No changes to commit"
-          git push
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+          # Explicitly define BRANCH_NAME using the github.head_ref variable
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+
+          echo "Branch name determined as: $BRANCH_NAME"
+
+          if [[ -z "$BRANCH_NAME" ]]; then
+            echo "Branch name could not be determined."
+            exit 1
+          fi
+
+          echo "Committing and pushing changes to branch: $BRANCH_NAME"
+
+          # Add changes and commit
+          git add .built_versions
+          git diff-index --quiet HEAD || git commit -m "Update .built_versions"
+
+          # Push changes using PAT. Ensure you have the correct URL format and PAT variable.
+          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+      
