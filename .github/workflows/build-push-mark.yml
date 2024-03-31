@@ -1,4 +1,4 @@
-name: Build, Push, and Mark on Approval
+name: Build, Push, and Mark
 
 on:
   pull_request_review:
@@ -7,7 +7,6 @@ on:
 jobs:
   build-push-mark:
     runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
