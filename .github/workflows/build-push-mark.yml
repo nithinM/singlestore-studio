@@ -29,13 +29,27 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Commit versions.txt changes
+      - name: Commit and push changes
         env:
-          PAT_TOKEN: ${{ secrets.PAT }}
+          PAT_TOKEN: ${{ secrets.PAT }} # Your PAT with repo scope
         run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add -A
-          git commit -m "commit message" || echo "No changes to commit"
-          git remote set-url origin https://nithinM:${PAT_TOKEN}@github.com/yourusername/yourrepo.git
-          git push origin HEAD:refs/heads/${{ github.head_ref }}
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+          # Determine the branch name dynamically
+          BRANCH_NAME=$(git symbolic-ref --short HEAD || echo "")
+          if [[ -z "$BRANCH_NAME" && ! -z "${{ github.head_ref }}" ]]; then
+            BRANCH_NAME="${{ github.head_ref }}"
+          fi
+
+          if [[ -z "$BRANCH_NAME" ]]; then
+            echo "Branch name could not be determined."
+            exit 1
+          fi
+
+          echo "Committing and pushing changes to branch: $BRANCH_NAME"
+
+          git add .built_versions
+          git diff-index --quiet HEAD || git commit -m "commit message"
+          git push https://${PAT_TOKEN}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+      
