@@ -34,5 +34,17 @@ jobs:
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          # Use the PAT for pushing
-          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH
+          # Assuming the workflow is triggered by pull_request_review event
+          # and github.head_ref is populated with the PR branch name
+          BRANCH_NAME="${{ github.head_ref }}"
+          if [[ -z "$BRANCH_NAME" ]]; then
+            echo "The branch name could not be determined."
+            exit 1
+          fi
+          # Use git commands to commit and push changes
+          git add version.txt .built_versions
+          git status
+          git diff-index --quiet HEAD || git commit -m "Mark version as built"
+          echo "Pushing changes to branch: $BRANCH_NAME"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+      
