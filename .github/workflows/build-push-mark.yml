@@ -12,6 +12,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Ensure we get all history for .built_versions tracking
+          ref: ${{ github.head_ref }} # Checkout the head ref branch, useful for pull_request_target event
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -36,4 +37,4 @@ jobs:
           if [ -f version.txt ]; then git add version.txt; fi
           if [ -f .built_versions ]; then git add .built_versions; fi
           git diff --staged --quiet || git commit -m "Mark version as built"
-          git push
+          git push origin HEAD:${{ github.head_ref }}
