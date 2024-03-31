@@ -30,6 +30,8 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Commit versions.txt changes
+        env:
+          PAT_TOKEN: ${{ secrets.PAT }}
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
@@ -42,4 +44,4 @@ jobs:
           git add versions.txt .built_versions
           git diff-index --quiet HEAD || git commit -m "Mark versions as built"
           echo "Pushing changes to branch: $BRANCH_NAME"
-          git push https://github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+          git push https://nithinM:${PAT_TOKEN}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
