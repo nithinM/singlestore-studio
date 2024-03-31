@@ -34,21 +34,21 @@ jobs:
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          echo "Current branch:"
-          git branch --show-current
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          echo "Current working directory:"
+          pwd
+          echo "Directory listing:"
+          ls -la
+          # Explicitly setting BRANCH_NAME for debugging purposes
+          BRANCH_NAME="fix-build-and-push-pipeline"
           echo "Branch name from event: $BRANCH_NAME"
-          if [[ -z "$BRANCH_NAME" ]]; then
-            echo "The branch name could not be determined. Using fallback."
-            BRANCH_NAME=$(git branch --show-current)
-          fi
-          if [[ -z "$BRANCH_NAME" ]]; then
-            echo "Failed to determine the branch name."
+          # Checking if version.txt exists before attempting to add it
+          if [ ! -f version.txt ]; then
+            echo "version.txt does not exist in the current directory."
+            find . -name version.txt # Attempt to locate version.txt elsewhere
             exit 1
           fi
-          echo "Using branch name: $BRANCH_NAME"
           git add version.txt .built_versions
-          git status
           git diff-index --quiet HEAD || git commit -m "Mark version as built"
-          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+          echo "Pushing changes to branch: $BRANCH_NAME"
+          git push https://***@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
       
