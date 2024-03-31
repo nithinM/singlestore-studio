@@ -11,16 +11,13 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Ensure we get all history for .built_versions tracking
+          fetch-depth: 0
+          token: ${{ secrets.PAT }} # Use PAT for checkout to ensure subsequent git operations can push
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
 
       - name: Build, push Docker image, and mark version
         run: ./build-and-push.sh --build-push-mark
@@ -30,26 +27,18 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Commit and push changes
-        env:
-          PAT_TOKEN: ${{ secrets.PAT }} # Your PAT with repo scope
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-
-          # Determine the branch name dynamically
-          BRANCH_NAME=$(git symbolic-ref --short HEAD || echo "")
-          if [[ -z "$BRANCH_NAME" && ! -z "${{ github.head_ref }}" ]]; then
-            BRANCH_NAME="${{ github.head_ref }}"
-          fi
-
+          BRANCH_NAME="${{ github.head_ref }}"
           if [[ -z "$BRANCH_NAME" ]]; then
             echo "Branch name could not be determined."
             exit 1
           fi
 
           echo "Committing and pushing changes to branch: $BRANCH_NAME"
-
+          
+          # Add changes and commit
           git add .built_versions
-          git diff-index --quiet HEAD || git commit -m "commit message"
-          git push https://${PAT_TOKEN}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
-      
+          git diff-index --quiet HEAD || git commit -m "Update .built_versions"
+          
+          # Push changes using PAT
+          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
