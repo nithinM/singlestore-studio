@@ -37,4 +37,13 @@ jobs:
           if [ -f version.txt ]; then git add version.txt; fi
           if [ -f .built_versions ]; then git add .built_versions; fi
           git diff --staged --quiet || git commit -m "Mark version as built"
-          git push origin HEAD:${{ github.head_ref }}
+          BRANCH=${{ github.head_ref }} || echo "Using fallback for branch name"
+          if [ -z "$BRANCH" ]; then
+            BRANCH=${GITHUB_REF#refs/heads/} # Fallback to extracting from GITHUB_REF
+            echo "Fallback branch name: $BRANCH"
+          else
+            echo "Branch name from head_ref: $BRANCH"
+          fi
+          git push origin HEAD:refs/heads/$BRANCH
+          env:
+            GITHUB_REF: ${{ github.ref }}
