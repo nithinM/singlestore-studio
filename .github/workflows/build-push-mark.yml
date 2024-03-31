@@ -42,4 +42,4 @@ jobs:
           git add versions.txt .built_versions
           git diff-index --quiet HEAD || git commit -m "Mark versions as built"
           echo "Pushing changes to branch: $BRANCH_NAME"
-          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+          git push https://github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
