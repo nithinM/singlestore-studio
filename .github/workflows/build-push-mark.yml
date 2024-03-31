@@ -33,6 +33,7 @@ jobs:
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          git add version.txt .built_versions
-          git commit -m "Mark version as built" -a || echo "No changes to commit"
+          if [ -f version.txt ]; then git add version.txt; fi
+          if [ -f .built_versions ]; then git add .built_versions; fi
+          git diff --staged --quiet || git commit -m "Mark version as built"
           git push
