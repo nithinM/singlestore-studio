@@ -1,0 +1,33 @@
+name: PR Build
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image from PR
+        run: ./build-and-push.sh --build-only
+        env:
+          BASE_URL: https://release.memsql.com/production/debian/pool/
+
+      - name: Auto-assign PR to me
+        if: success()
+        uses: actions/github-script@v3
+        with:
+          script: |
+            github.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: ['<Your-GitHub-Username>']
+            })
+          github-token: ${{secrets.GITHUB_TOKEN}}
