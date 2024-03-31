@@ -34,7 +34,7 @@ build_and_push() {
 
 case "$1" in
   --build-only)
-    local version=$(tail -n 1 "$VERSIONS_FILE")
+    version=$(tail -n 1 "$VERSIONS_FILE") # Removed 'local' keyword
     build_and_push "$version" true
     ;;
 
