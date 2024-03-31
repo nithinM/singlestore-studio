@@ -34,13 +34,13 @@ build_and_push() {
 
 case "$1" in
   --build-only)
-    version=$(tail -n 1 "$VERSIONS_FILE") # Removed 'local' keyword
+    version=$(tail -n 1 "$VERSIONS_FILE")
     build_and_push "$version" true
     ;;
 
   --build-push-mark)
     while IFS= read -r version; do
-      if grep -q "^$version$" "$BUILT_MARKER"; then # More precise matching
+      if grep -q "^$version$" "$BUILT_MARKER"; then
         echo "$version already built, skipping..."
         continue
       fi
