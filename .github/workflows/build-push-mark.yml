@@ -28,17 +28,25 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          BRANCH_NAME="${{ github.head_ref }}"
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+          # Explicitly define BRANCH_NAME using the github.head_ref variable
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+
+          echo "Branch name determined as: $BRANCH_NAME"
+
           if [[ -z "$BRANCH_NAME" ]]; then
             echo "Branch name could not be determined."
             exit 1
           fi
 
           echo "Committing and pushing changes to branch: $BRANCH_NAME"
-          
+
           # Add changes and commit
           git add .built_versions
           git diff-index --quiet HEAD || git commit -m "Update .built_versions"
-          
-          # Push changes using PAT
+
+          # Push changes using PAT. Ensure you have the correct URL format and PAT variable.
           git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH_NAME
+      
