@@ -1,15 +1,19 @@
-name: PR Build
+name: PR Build and Auto-Assign
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
 
 jobs:
-  build:
+  build-and-assign:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          # This fetches the PR code safely by referencing the PR's HEAD commit SHA.
+          # Important: Ensure any subsequent steps that execute code are secure.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
