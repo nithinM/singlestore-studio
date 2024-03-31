@@ -34,16 +34,5 @@ jobs:
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          if [ -f version.txt ]; then git add version.txt; fi
-          if [ -f .built_versions ]; then git add .built_versions; fi
-          git diff --staged --quiet || git commit -m "Mark version as built"
-          BRANCH=${{ github.head_ref }} || echo "Using fallback for branch name"
-          if [ -z "$BRANCH" ]; then
-            BRANCH=${GITHUB_REF#refs/heads/} # Fallback to extracting from GITHUB_REF
-            echo "Fallback branch name: $BRANCH"
-          else
-            echo "Branch name from head_ref: $BRANCH"
-          fi
-          git push origin HEAD:refs/heads/$BRANCH
-          env:
-            GITHUB_REF: ${{ github.ref }}
+          # Use the PAT for pushing
+          git push https://${{ secrets.PAT }}@github.com/nithinM/singlestore-studio.git HEAD:refs/heads/$BRANCH
